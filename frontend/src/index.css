@@ -1,0 +1,8 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 简单的全局背景色设置 */
+body {
+  @apply bg-gray-50 text-gray-900;
+}

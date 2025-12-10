@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  # --- 1. 数据库服务 (MySQL) ---
+  db:
+    image: mysql:8.0
+    container_name: gallery_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword  # 开发环境密码，生产环境请修改
+      MYSQL_DATABASE: smart_gallery      # 初始化创建的数据库名
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - gallery_net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # --- 2. 对象存储服务 (MinIO) ---
+  minio:
+    image: minio/minio:RELEASE.2023-09-30T07-02-29Z
+    container_name: gallery_minio
+    restart: always
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000" # API 端口 (代码连接用)
+      - "9001:9001" # 控制台端口 (浏览器访问用)
+    environment:
+      MINIO_ROOT_USER: admin
+      MINIO_ROOT_PASSWORD: password123
+    volumes:
+      - minio_data:/data
+    networks:
+      - gallery_net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+volumes:
+  mysql_data:
+  minio_data:
+
+networks:
+  gallery_net:
+    driver: bridge

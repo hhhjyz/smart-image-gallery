@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"bytes"
 	"context"
 	"log"
 	"mime/multipart"
@@ -59,4 +60,19 @@ func RemoveFile(objectName string) error {
 	ctx := context.Background()
 	// 调用 MinIO SDK 删除对象
 	return MinioClient.RemoveObject(ctx, BucketName, objectName, minio.RemoveObjectOptions{})
+}
+
+func UploadBuffer(data []byte, objectName string, contentType string) (string, error) {
+	ctx := context.Background()
+	reader := bytes.NewReader(data)
+
+	_, err := MinioClient.PutObject(ctx, BucketName, objectName, reader, int64(len(data)), minio.PutObjectOptions{
+		ContentType: contentType,
+	})
+	if err != nil {
+		return "", err
+	}
+
+	url := "http://localhost:9000/" + BucketName + "/" + objectName
+	return url, nil
 }

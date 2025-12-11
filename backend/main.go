@@ -51,6 +51,8 @@ func main() {
 		protected.GET("/images", controllers.GetImages)
 
 		protected.DELETE("/images/:id", controllers.DeleteImage)
+
+		protected.PUT("/images/:id/tags", controllers.UpdateImageTags)
 	}
 
 	// 6. 启动服务

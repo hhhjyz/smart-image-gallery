@@ -1,6 +1,9 @@
 package controllers
 
 import (
+	"bytes"
+	"image"
+	"image/jpeg"
 	"io"
 	"net/http"
 	"path"
@@ -9,6 +12,7 @@ import (
 	"smart-gallery-backend/models"
 	"smart-gallery-backend/utils"
 
+	"github.com/disintegration/imaging" // 👈 引入图像处理库
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
@@ -17,14 +21,12 @@ import (
 func UploadImage(c *gin.Context) {
 	userID, _ := c.Get("userID")
 
-	// 1. 获取上传的文件 Header
 	fileHeader, err := c.FormFile("file")
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "请上传文件"})
 		return
 	}
 
-	// 2. 打开文件流
 	src, err := fileHeader.Open()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "无法读取文件"})
@@ -32,68 +34,82 @@ func UploadImage(c *gin.Context) {
 	}
 	defer src.Close()
 
-	// 3. ✨ 关键步骤：读取文件内容到内存
-	// 因为流只能读一次，我们要把它读出来，分别发给 AI 和 MinIO
+	// 读取文件内容到内存
 	fileBytes, err := io.ReadAll(src)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "文件读取失败"})
 		return
 	}
 
-	// 4. ✨ 调用智谱 AI 进行分析 (传入二进制数据)
-	// 注意：这里是同步调用，可能会让前端等待几秒钟
+	// 1. 异步调用 AI 分析 (可以稍微加速响应，但为了简单这里还是同步)
 	aiTags := utils.AnalyzeImage(fileBytes)
 
-	// 5. 上传到 MinIO
-	// 生成唯一文件名
+	// 2. 提取 EXIF
+	exifData := utils.ExtractExif(fileBytes)
+
+	// 3. 生成文件名
 	ext := filepath.Ext(fileHeader.Filename)
-	newFileName := uuid.New().String() + ext
+	uniqueId := uuid.New().String()
+	originalFileName := uniqueId + ext
+	thumbnailFileName := "thumb-" + uniqueId + ".jpg" // 缩略图强制存为 jpg
 
-	// 由于 src 已经被读完了，我们需要用 fileBytes 重新创建一个 Reader 给 MinIO 用
-	// 这里我们需要稍微修改一下 utils.UploadFile 的调用方式，或者我们在这里直接处理 MinIO 上传逻辑
-	// 为了保持 utils 封装，我们还是把“流”重置一下比较好，但 multipart.File 不一定支持 Seek。
-	// 所以最稳妥的方法是：直接用 MinIO Client 的 PutObject 上传 byte reader。
-
-	// 这里我们做一个小小的 hack，直接调用 utils 里的变量，或者复用 upload 逻辑
-	// 为了不破坏 utils/minio.go 的结构，我们用最简单的方法：
-	// 让 utils.UploadFile 能够接受一个重新构造的 header (比较麻烦)
-	// 或者 -> 我们直接在这里调用 MinIO SDK 上传（如果你不介意逻辑写在这里）
-
-	// *更好的方案*：为了配合你现在的 utils.UploadFile 签名 (它接收 *multipart.FileHeader)
-	// 我们其实很难在不修改 utils 的情况下传入内存数据。
-	// 所以，最简单的做法是：**不要在 Controller 里读完流**，而是让 utils.UploadFile 帮我们读，或者修改 utils。
-
-	// 鉴于目前是教学项目，我们采用 **"重置 Seek"** 的方法（如果是磁盘文件支持 Seek）
-	// 如果 src 支持 Seek (通常临时文件支持)，我们可以回退指针
-	if seeker, ok := src.(io.Seeker); ok {
-		seeker.Seek(0, 0) // 回到文件开头
-	} else {
-		// 如果不支持 Seek，这是一个潜在风险。但在 Gin 默认配置下，小文件是内存流，大文件是临时文件，通常都支持。
-	}
-
-	// 调用 MinIO 上传
-	url, err := utils.UploadFile(fileHeader, newFileName)
+	// 4. 上传原图 (复用 fileHeader，需重置 seek，或者直接用 minio putobject 传 buffer)
+	// 为了兼容 utils.UploadFile 的逻辑，我们这里依然传 fileHeader
+	// 注意：由于 fileBytes 读完了流，我们需要让 utils 里的 UploadFile 重新打开流
+	// 只要 UploadFile 内部是 file.Open()，它会得到一个新的 reader，没问题。
+	originalUrl, err := utils.UploadFile(fileHeader, originalFileName)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "MinIO 上传失败: " + err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "原图上传失败"})
 		return
 	}
 
-	// 6. 存入数据库
-	image := models.Image{
-		UserID:   userID.(uint),
-		FileName: fileHeader.Filename,
-		Url:      url,
-		Tags:     aiTags, // 保存 AI 识别的标签
+	// 5. ✨ 生成缩略图
+	var thumbnailUrl string
+
+	// 解码图片
+	img, _, err := image.Decode(bytes.NewReader(fileBytes))
+	if err == nil {
+		// 调整大小：宽度 400px，高度自动保持比例
+		// imaging.Resize 使用 Lanczos 滤镜，质量较好
+		thumbImg := imaging.Resize(img, 400, 0, imaging.Lanczos)
+
+		// 将缩略图编码为 JPEG 字节流
+		buf := new(bytes.Buffer)
+		err = jpeg.Encode(buf, thumbImg, &jpeg.Options{Quality: 80})
+
+		if err == nil {
+			// 上传缩略图
+			thumbnailUrl, _ = utils.UploadBuffer(buf.Bytes(), thumbnailFileName, "image/jpeg")
+		}
 	}
 
-	if err := database.DB.Create(&image).Error; err != nil {
+	// 如果生成失败（比如不支持的格式），就用原图链接代替
+	if thumbnailUrl == "" {
+		thumbnailUrl = originalUrl
+	}
+
+	// 6. 存入数据库
+	imageModel := models.Image{
+		UserID:       userID.(uint),
+		FileName:     fileHeader.Filename,
+		Url:          originalUrl,
+		ThumbnailUrl: thumbnailUrl, // ✨ 保存缩略图链接
+		Tags:         aiTags,
+		CameraModel:  exifData.CameraModel,
+		ShootingTime: exifData.ShootingTime,
+		Resolution:   exifData.Resolution,
+		Aperture:     exifData.Aperture,
+		ISO:          exifData.ISO,
+	}
+
+	if err := database.DB.Create(&imageModel).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "数据库保存失败"})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "上传成功",
-		"image":   image,
+		"image":   imageModel,
 	})
 }
 
@@ -105,39 +121,66 @@ func GetImages(c *gin.Context) {
 		return
 	}
 
+	searchQuery := c.Query("q")
 	var images []models.Image
-	result := database.DB.Where("user_id = ?", userID).Order("created_at desc").Find(&images)
+	db := database.DB.Where("user_id = ?", userID)
+	if searchQuery != "" {
+		likeQuery := "%" + searchQuery + "%"
+		db = db.Where("file_name LIKE ? OR tags LIKE ?", likeQuery, likeQuery)
+	}
+	// GORM 会自动查询所有字段，包括 ThumbnailUrl
+	result := db.Order("created_at desc").Find(&images)
 
 	if result.Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "获取图片列表失败"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "获取列表失败"})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"data": images,
-	})
+	c.JSON(http.StatusOK, gin.H{"data": images})
+}
+
+// UpdateImageTags 保持不变
+func UpdateImageTags(c *gin.Context) {
+	// ... (代码内容同前，省略以节省空间) ...
+	// 您之前的代码逻辑完全正确，这里不需要改动
+	// 只需要保留函数定义即可
+	userID, _ := c.Get("userID")
+	imageID := c.Param("id")
+	type UpdateTagsInput struct {
+		Tags string `json:"tags"`
+	}
+	var input UpdateTagsInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "参数错误"})
+		return
+	}
+	var image models.Image
+	if err := database.DB.Where("id = ? AND user_id = ?", imageID, userID).First(&image).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "图片不存在"})
+		return
+	}
+	image.Tags = input.Tags
+	database.DB.Save(&image)
+	c.JSON(http.StatusOK, gin.H{"message": "更新成功", "image": image})
 }
 
 // DeleteImage 保持不变
 func DeleteImage(c *gin.Context) {
 	userID, _ := c.Get("userID")
 	imageID := c.Param("id")
-
 	var image models.Image
-
 	if err := database.DB.Where("id = ? AND user_id = ?", imageID, userID).First(&image).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "图片不存在或无权删除"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "图片不存在"})
 		return
 	}
 
-	objectName := path.Base(image.Url)
-
-	if err := utils.RemoveFile(objectName); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "文件删除失败"})
-		return
+	// 删除原图
+	utils.RemoveFile(path.Base(image.Url))
+	// 删除缩略图 (如果有且不等于原图)
+	if image.ThumbnailUrl != "" && image.ThumbnailUrl != image.Url {
+		utils.RemoveFile(path.Base(image.ThumbnailUrl))
 	}
 
 	database.DB.Delete(&image)
-
 	c.JSON(http.StatusOK, gin.H{"message": "删除成功"})
 }

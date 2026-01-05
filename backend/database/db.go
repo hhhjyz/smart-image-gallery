@@ -3,6 +3,7 @@ package database
 import (
 	"fmt"
 	"log"
+	"os"
 	"smart-gallery-backend/models" // 引用下面的 models 包
 
 	"gorm.io/driver/mysql"
@@ -11,10 +12,23 @@ import (
 
 var DB *gorm.DB
 
+// getEnv 返回环境变量或默认值
+func getEnv(key, def string) string {
+	if v := os.Getenv(key); v != "" {
+		return v
+	}
+	return def
+}
+
 func Connect() {
-	// 连接本地的 Docker MySQL (端口 3306)
-	// 用户名: root, 密码: rootpassword, 库名: smart_gallery
-	dsn := "root:rootpassword@tcp(localhost:3306)/smart_gallery?charset=utf8mb4&parseTime=True&loc=Local"
+	// 从环境变量读取数据库连接配置，保留兼容的默认值
+	user := getEnv("DB_USER", "root")
+	password := getEnv("DB_PASSWORD", "rootpassword")
+	host := getEnv("DB_HOST", "localhost")
+	port := getEnv("DB_PORT", "3306")
+	name := getEnv("DB_NAME", "smart_gallery")
+
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local", user, password, host, port, name)
 
 	connection, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {

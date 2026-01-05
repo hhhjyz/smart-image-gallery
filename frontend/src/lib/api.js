@@ -1,8 +1,14 @@
 import axios from 'axios';
 
+// 动态获取后端地址：使用当前访问的主机名（支持手机端访问）
+const getBaseURL = () => {
+  const hostname = window.location.hostname; // localhost 或局域网 IP
+  return `http://${hostname}:8080/api`;
+};
+
 // 创建 axios 实例
 const api = axios.create({
-  baseURL: 'http://localhost:8080/api', // 指向你的 Go 后端
+  baseURL: getBaseURL(),
 });
 
 // 请求拦截器：自动把 Token 带上

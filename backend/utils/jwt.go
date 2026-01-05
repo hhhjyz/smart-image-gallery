@@ -2,12 +2,19 @@ package utils
 
 import (
 	"errors"
+	"os"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 )
 
 var jwtKey = []byte("your_secret_key_here") // 在生产环境中应从环境变量读取
+
+func init() {
+	if k := os.Getenv("JWT_SECRET"); k != "" {
+		jwtKey = []byte(k)
+	}
+}
 
 // Claims 定义 Token 里的载荷数据
 type Claims struct {

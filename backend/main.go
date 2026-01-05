@@ -40,6 +40,13 @@ func main() {
 		auth.POST("/login", controllers.Login)
 	}
 
+	// 4.5 MCP 公开只读接口 (供 AI 助手检索图片，不需要登录)
+	mcp := r.Group("/api/mcp")
+	{
+		mcp.GET("/images", controllers.GetAllImagesPublic) // 获取所有图片（只读）
+		mcp.GET("/stats", controllers.GetGalleryStats)     // 获取统计信息
+	}
+
 	// 5. 受保护路由组 (需要登录) (新增)
 	// 所有 /api 下（除了 auth）的请求都会经过 AuthMiddleware
 	protected := r.Group("/api")

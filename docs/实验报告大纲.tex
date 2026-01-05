@@ -89,16 +89,8 @@
 \fancyfoot[C]{\thepage}
 \renewcommand{\headrulewidth}{0.4pt}
 
-% ==================== 封面信息 ====================
-\title{
-    \vspace{2cm}
-    {\Huge \textbf{B/S体系软件设计}} \\[1cm]
-    {\LARGE 实验报告} \\[2cm]
-    {\Large \textbf{智能云图库系统}} \\[0.5cm]
-    {\large Smart Image Gallery}
-}
-\author{}
-\date{}
+% ==================== 下划线填空命令 ====================
+\newcommand{\ulinefill}[2][200pt]{\underline{\makebox[#1][c]{#2}}}
 
 % ==================== 正文开始 ====================
 \begin{document}
@@ -106,27 +98,74 @@
 % ==================== 封面 ====================
 \begin{titlepage}
     \centering
-    \vspace*{2cm}
     
+    % Logo 图片（如果有的话）
+    % \includegraphics[width=0.6\textwidth]{zju_logo.png}
+    
+    % 如果没有logo，使用文字代替
+    \vspace*{1cm}
     {\Huge \textbf{浙江大学}}\\[0.5cm]
-    {\Large 计算机科学与技术学院}\\[2cm]
     
-    {\huge \textbf{B/S体系软件设计}}\\[0.5cm]
-    {\LARGE 实验报告}\\[3cm]
+    \vspace{2cm}
     
-    {\Large \textbf{项目名称：智能云图库系统}}\\[0.3cm]
-    {\large (Smart Image Gallery)}\\[3cm]
+    {\Huge \bfseries 本科实验报告}
     
-    \begin{tabular}{rl}
-        \textbf{姓\quad 名：} & [学生姓名] \\[0.3cm]
-        \textbf{学\quad 号：} & [学号] \\[0.3cm]
-        \textbf{指导老师：} & 胡晓军 \\[0.3cm]
-        \textbf{提交日期：} & 2026年1月5日 \\
+    \vspace{3cm}
+    
+    % 信息列表
+    {\Large
+    \renewcommand{\arraystretch}{1.8}
+    \begin{tabular}{r c}
+        \textbf{课程名称：} & \ulinefill[250pt]{B/S体系软件设计} \\
+        \textbf{姓\hspace{2em}名：} & \ulinefill[250pt]{[学生姓名]} \\
+        \textbf{学\hspace{2em}院：} & \ulinefill[250pt]{计算机科学与技术学院} \\
+        \textbf{系：} & \ulinefill[250pt]{计算机系} \\
+        \textbf{专\hspace{2em}业：} & \ulinefill[250pt]{计算机科学与技术} \\
+        \textbf{学\hspace{2em}号：} & \ulinefill[250pt]{[学号]} \\
+        \textbf{指导教师：} & \ulinefill[250pt]{胡晓军} \\
     \end{tabular}
+    }
     
     \vfill
-    {\large 2025-2026学年秋冬学期}
+    
+    {\Large 2026年1月5日}
+    
+    \vspace{2cm}
+    
 \end{titlepage}
+
+% ==================== 实验报告表头 ====================
+\newpage
+\setcounter{page}{1}
+
+\begin{center}
+    {\LARGE \bfseries 浙江大学实验报告}
+\end{center}
+
+\vspace{0.5cm}
+
+\begin{table}[h]
+    \centering
+    \renewcommand{\arraystretch}{1.5}
+    \setlength{\tabcolsep}{8pt}
+    \begin{tabular}{|p{2.5cm}|p{4.5cm}|p{2.5cm}|p{4.5cm}|}
+        \hline
+        \textbf{课程名称} & B/S体系软件设计 & \textbf{实验类型} & 综合性 \\ 
+        \hline
+        \textbf{实验项目名称} & \multicolumn{3}{l|}{智能云图库系统 (Smart Image Gallery)} \\
+        \hline
+        \textbf{学生姓名} & [学生姓名] & \textbf{同组学生姓名} & 无 \\
+        \hline
+        \textbf{专业} & 计算机科学与技术 & \textbf{学号} & [学号] \\
+        \hline
+        \textbf{指导老师} & 胡晓军 & \textbf{实验地点} & 曹光彪西楼 \\
+        \hline
+        \textbf{实验日期} & 2026年1月5日 & & \\
+        \hline
+    \end{tabular}
+\end{table}
+
+\vspace{0.5cm}
 
 % ==================== 目录 ====================
 \newpage

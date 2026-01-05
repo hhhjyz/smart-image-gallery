@@ -31,21 +31,18 @@ func Register(c *gin.Context) {
 		return
 	}
 
-	// 1. 哈希密码
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.DefaultCost)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "密码加密失败"})
 		return
 	}
 
-	// 2. 创建用户对象
 	user := models.User{
 		Username: input.Username,
 		Email:    input.Email,
 		Password: string(hashedPassword),
 	}
 
-	// 3. 存入数据库
 	if result := database.DB.Create(&user); result.Error != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "用户名或邮箱已存在"})
 		return
@@ -62,20 +59,17 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	// 1. 查找用户
 	var user models.User
 	if err := database.DB.Where("username = ?", input.Username).First(&user).Error; err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "用户名或密码错误"})
 		return
 	}
 
-	// 2. 验证密码
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(input.Password)); err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "用户名或密码错误"})
 		return
 	}
 
-	// 3. 生成 Token
 	token, err := utils.GenerateToken(user.ID, user.Email)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "生成 Token 失败"})

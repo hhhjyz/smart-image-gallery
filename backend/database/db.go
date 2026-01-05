@@ -35,7 +35,7 @@ func Connect() {
 		log.Fatal("无法连接数据库:", err)
 	}
 
-	fmt.Println("✅ 成功连接到 MySQL 数据库!")
+	fmt.Println("成功连接到 MySQL 数据库")
 
 	// 自动迁移模式：自动创建或更新数据库表结构
 	// 这里注册所有的 Model

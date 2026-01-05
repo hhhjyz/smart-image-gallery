@@ -6,40 +6,25 @@ import (
 	"time"
 )
 
-// ExifTagsFromData 根据已提取的 ExifData 生成用于检索/分类的标签。
-// 设计目标：
-// 1) 纯本地推导（不依赖 AI）
-// 2) 尽量稳定、可解释
-// 3) 对缺失字段容错
-//
-// 标签示例：
-// - "相机:iPhone 14 Pro"
-// - "时间:白天" / "时间:夜晚" / "时间:清晨" ...
-// - "方向:横图" / "方向:竖图" / "方向:方图"
-// - "分辨率:高" / "分辨率:中" / "分辨率:低"
+// ExifTagsFromData 根据EXIF数据生成检索标签
 func ExifTagsFromData(exif ExifData) []string {
 	var tags []string
 
-	// 1) 相机型号
 	if model := strings.TrimSpace(exif.CameraModel); model != "" {
 		tags = append(tags, "相机:"+model)
 	}
 
-	// 2) 拍摄时间 -> 时间段标签
 	if exif.ShootingTime != "" {
 		if t, err := time.Parse("2006-01-02 15:04:05", exif.ShootingTime); err == nil {
 			h := t.Hour()
 			tags = append(tags, "时间:"+timeBucket(h))
-			// 也给出月份/季节（更利于检索）
 			tags = append(tags, "月份:"+strconv.Itoa(int(t.Month())))
 			tags = append(tags, "季节:"+seasonBucket(int(t.Month())))
 		}
 	}
 
-	// 3) 分辨率 -> 方向 + 清晰度
 	w, h := parseResolution(exif.Resolution)
 	if w > 0 && h > 0 {
-		// 方向
 		switch {
 		case w > h:
 			tags = append(tags, "方向:横图")
@@ -49,12 +34,11 @@ func ExifTagsFromData(exif ExifData) []string {
 			tags = append(tags, "方向:方图")
 		}
 
-		// 清晰度（像素总量分桶）
 		pixels := int64(w) * int64(h)
 		switch {
-		case pixels >= 8000000: // >= 8MP
+		case pixels >= 8000000:
 			tags = append(tags, "分辨率:高")
-		case pixels >= 2000000: // 2MP-8MP
+		case pixels >= 2000000:
 			tags = append(tags, "分辨率:中")
 		default:
 			tags = append(tags, "分辨率:低")
@@ -95,7 +79,6 @@ func seasonBucket(month int) string {
 }
 
 func parseResolution(res string) (int, int) {
-	// res 形如 "4032x3024" 或 "未知"
 	r := strings.TrimSpace(res)
 	if r == "" || r == "未知" {
 		return 0, 0

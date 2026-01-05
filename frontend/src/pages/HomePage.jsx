@@ -27,21 +27,20 @@ export default function HomePage() {
   const [tagInput, setTagInput] = useState('');
   const [isUpdatingTag, setIsUpdatingTag] = useState(false);
 
-  // ✨ 多选与轮播状态
+  // 多选与轮播状态
   const [isSelectMode, setIsSelectMode] = useState(false);
   const [selectedImages, setSelectedImages] = useState(new Set());
   const [isSlideshow, setIsSlideshow] = useState(false);
   const [slideshowIndex, setSlideshowIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
-  const [slideshowInterval, setSlideshowInterval] = useState(3000); // 3秒切换
+  const [slideshowInterval, setSlideshowInterval] = useState(3000);
   const slideshowTimerRef = useRef(null);
 
   // 编辑状态
   const [isEditing, setIsEditing] = useState(false);
-  // 🛠️ 修改：使用 useRef 代替 useState 来持有 cropper 实例，这通常更稳定
   const cropperRef = useRef(null);
   
-  // ✨ 色调调整状态
+  // 色调调整状态
   const [adjustments, setAdjustments] = useState({
     brightness: 100,  // 0-200, 100为正常
     contrast: 100,    // 0-200, 100为正常
@@ -99,7 +98,7 @@ export default function HomePage() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [selectedIndex, images.length, isEditing]);
 
-  // ✨ 轮播自动播放
+  // 轮播自动播放
   useEffect(() => {
     if (!isSlideshow || !isPlaying) {
       if (slideshowTimerRef.current) {
@@ -230,11 +229,11 @@ export default function HomePage() {
     await updateTags(activeImage.ID, activeImage.tags.split(',').filter(t => t !== tag).join(','));
   };
 
-  // ✨ 多选逻辑
+  // 多选逻辑
   const toggleSelectMode = () => {
     setIsSelectMode(!isSelectMode);
     if (isSelectMode) {
-      setSelectedImages(new Set()); // 退出选择模式时清空选择
+      setSelectedImages(new Set());
     }
   };
 
@@ -259,7 +258,7 @@ export default function HomePage() {
     setSelectedImages(new Set());
   };
 
-  // ✨ 轮播逻辑
+  // 轮播逻辑
   const startSlideshow = () => {
     if (selectedImages.size < 2) {
       alert('请至少选择2张图片进行轮播');
@@ -290,9 +289,7 @@ export default function HomePage() {
     return Array.from(selectedImages).map(id => images.find(img => img.ID === id)).filter(Boolean);
   };
 
-  // --- ✨ 图片编辑逻辑 (修复版) ---
-  
-  // 旋转逻辑：通过 ref 获取 cropper 实例
+  // 图片编辑逻辑
   const handleRotateLeft = () => {
     const cropper = cropperRef.current?.cropper;
     if (cropper) cropper.rotate(-90);
@@ -303,7 +300,7 @@ export default function HomePage() {
     if (cropper) cropper.rotate(90);
   };
 
-  // ✨ 色调调整逻辑
+  // 色调调整逻辑
   const resetAdjustments = () => {
     setAdjustments({ brightness: 100, contrast: 100, saturation: 100, hue: 0 });
   };
@@ -736,7 +733,7 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* ✨ 轮播模态框 */}
+      {/* 轮播模态框 */}
       {isSlideshow && (
         <div className="fixed inset-0 z-[110] bg-black flex flex-col animate-in fade-in duration-300">
           {/* 顶部控制栏 */}

@@ -33,7 +33,7 @@ func InitMinio() {
 		log.Fatalln("MinIO 连接失败:", err)
 	}
 
-	log.Println("✅ 成功连接到 MinIO!")
+	log.Println("成功连接到 MinIO")
 	MinioClient = client
 	BucketName = bucket
 }

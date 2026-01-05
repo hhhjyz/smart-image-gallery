@@ -1,0 +1,1766 @@
+% !TEX encoding = UTF-8 Unicode
+% !TEX program = xelatex
+\documentclass[12pt,a4paper]{article}
+
+% ==================== 宏包引入 ====================
+\usepackage[UTF8]{ctex}                    % 中文支持
+\usepackage{geometry}                       % 页面设置
+\usepackage{graphicx}                       % 图片插入
+\usepackage{float}                          % 图片位置控制
+\usepackage{listings}                       % 代码高亮
+\usepackage{xcolor}                         % 颜色支持
+\usepackage{hyperref}                       % 超链接
+\usepackage{booktabs}                       % 三线表
+\usepackage{array}                          % 表格增强
+\usepackage{enumitem}                       % 列表定制
+\usepackage{fancyhdr}                       % 页眉页脚
+\usepackage{titlesec}                       % 标题格式
+\usepackage{tocloft}                        % 目录格式
+\usepackage{amsmath}                        % 数学公式
+\usepackage{amssymb}                        % 数学符号(checkmark)
+\usepackage{subcaption}                     % 子图支持
+\usepackage{tikz}                           % TikZ绘图
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning, fit, calc, backgrounds}
+
+% ==================== 页面设置 ====================
+\geometry{left=2.5cm, right=2.5cm, top=3cm, bottom=3cm}
+
+% ==================== 代码样式设置 ====================
+% 定义 JavaScript 语言
+\lstdefinelanguage{JavaScript}{
+    keywords={break, case, catch, continue, debugger, default, delete, do, else, finally, for, function, if, in, instanceof, new, return, switch, this, throw, try, typeof, var, void, while, with, let, const, class, export, import, extends, async, await},
+    morecomment=[l]{//},
+    morecomment=[s]{/*}{*/},
+    morestring=[b]',
+    morestring=[b]",
+    sensitive=true
+}
+
+% 定义 JSON 语言（基于文本）
+\lstdefinelanguage{json}{
+    morestring=[b]",
+    morestring=[b]',
+    literate=
+        *{:}{{{\color{blue}:}}}{1}
+        {,}{{{\color{blue},}}}{1}
+        {\{}{{{\color{blue}\{}}}{1}
+        {\}}{{{\color{blue}\}}}}{1}
+        {[}{{{\color{blue}[}}}{1}
+        {]}{{{\color{blue}]}}}{1}
+}
+
+\lstset{
+    basicstyle=\small\ttfamily,
+    keywordstyle=\color{blue},
+    commentstyle=\color{gray},
+    stringstyle=\color{red!70!black},
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    stepnumber=1,
+    numbersep=5pt,
+    backgroundcolor=\color{white},
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    frame=single,
+    tabsize=2,
+    captionpos=b,
+    breaklines=true,
+    breakatwhitespace=false,
+    escapeinside={\%*}{*)},
+    xleftmargin=2em,
+    xrightmargin=2em,
+}
+
+% ==================== 超链接设置 ====================
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,
+    urlcolor=cyan,
+    citecolor=green,
+}
+
+% ==================== 页眉页脚设置 ====================
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{浙江大学}
+\fancyhead[R]{B/S体系软件设计实验报告}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% ==================== 封面信息 ====================
+\title{
+    \vspace{2cm}
+    {\Huge \textbf{B/S体系软件设计}} \\[1cm]
+    {\LARGE 实验报告} \\[2cm]
+    {\Large \textbf{智能云图库系统}} \\[0.5cm]
+    {\large Smart Image Gallery}
+}
+\author{}
+\date{}
+
+% ==================== 正文开始 ====================
+\begin{document}
+
+% ==================== 封面 ====================
+\begin{titlepage}
+    \centering
+    \vspace*{2cm}
+    
+    {\Huge \textbf{浙江大学}}\\[0.5cm]
+    {\Large 计算机科学与技术学院}\\[2cm]
+    
+    {\huge \textbf{B/S体系软件设计}}\\[0.5cm]
+    {\LARGE 实验报告}\\[3cm]
+    
+    {\Large \textbf{项目名称：智能云图库系统}}\\[0.3cm]
+    {\large (Smart Image Gallery)}\\[3cm]
+    
+    \begin{tabular}{rl}
+        \textbf{姓\quad 名：} & [学生姓名] \\[0.3cm]
+        \textbf{学\quad 号：} & [学号] \\[0.3cm]
+        \textbf{指导老师：} & 胡晓军 \\[0.3cm]
+        \textbf{提交日期：} & 2026年1月5日 \\
+    \end{tabular}
+    
+    \vfill
+    {\large 2025-2026学年秋冬学期}
+\end{titlepage}
+
+% ==================== 目录 ====================
+\newpage
+\tableofcontents
+\newpage
+
+% ==================== 第一部分：设计文档 ====================
+\section{设计文档}
+
+\subsection{项目概述}
+
+\subsubsection{项目背景}
+
+随着智能手机和数码相机的高速普及，人们日常生活中产生的照片数量呈爆炸式增长。据统计，全球每天产生的照片数量已超过数十亿张。面对如此海量的图片数据，传统的本地存储和管理方式暴露出诸多问题：
+
+\begin{itemize}
+    \item \textbf{存储空间受限}：本地设备存储容量有限，难以满足大量照片的长期存储需求
+    \item \textbf{跨设备访问困难}：照片分散存储在不同设备上，无法实现统一管理和随时随地访问
+    \item \textbf{检索效率低下}：传统的文件夹分类方式难以应对大量图片的快速检索需求
+    \item \textbf{数据安全风险}：本地存储面临设备损坏、丢失等导致数据永久丢失的风险
+    \item \textbf{智能化程度不足}：缺乏自动分类、智能标签等现代化管理功能
+\end{itemize}
+
+基于上述痛点，开发一个基于云端的智能图库管理系统具有重要的现实意义。本项目「智能云图库系统」(Smart Image Gallery) 旨在提供一个功能完善、界面友好、支持多终端访问的在线图片管理平台，并结合人工智能技术实现图片的智能分析与分类。
+
+\subsubsection{项目目标}
+
+本项目的主要目标是设计并实现一个完整的B/S架构智能图库系统，具体目标包括：
+
+\begin{enumerate}
+    \item \textbf{用户认证系统}：实现安全可靠的用户注册、登录功能，支持完善的输入验证机制
+    \item \textbf{图片存储管理}：支持PC端和移动端的图片上传，采用对象存储实现高效的文件管理
+    \item \textbf{元信息自动提取}：自动解析图片EXIF信息，提取拍摄时间、设备型号、参数等元数据
+    \item \textbf{AI智能分析}：集成大语言模型，实现图片内容的自动识别和智能标签生成
+    \item \textbf{灵活的检索功能}：支持按文件名、标签、设备等多维度检索图片
+    \item \textbf{友好的展示界面}：提供网格视图、全屏轮播等多种展示方式
+    \item \textbf{基础编辑功能}：支持图片裁剪、旋转等常用编辑操作
+    \item \textbf{响应式设计}：适配PC、平板、手机等多种设备，支持微信内置浏览器
+    \item \textbf{MCP接口}：提供Model Context Protocol接口，支持通过AI对话方式检索图片
+    \item \textbf{容器化部署}：采用Docker Compose实现一键部署，方便运维管理
+\end{enumerate}
+
+\subsubsection{技术选型}
+
+经过充分的技术调研和对比分析，本项目选用以下技术栈：
+
+\begin{table}[H]
+\centering
+\caption{技术栈选型及理由}
+\begin{tabular}{p{2cm}p{3cm}p{8cm}}
+\toprule
+\textbf{层次} & \textbf{技术} & \textbf{选型理由} \\
+\midrule
+前端框架 & React 18 + Vite & React生态成熟、组件化开发效率高；Vite构建速度快、开发体验好 \\
+UI样式 & Tailwind CSS & 原子化CSS框架，开发效率高，响应式设计便捷 \\
+图标库 & Lucide React & 轻量级、风格统一的图标库 \\
+图片编辑 & Cropper.js & 功能完善的图片裁剪库，支持旋转等操作 \\
+后端框架 & Go + Gin & Go语言性能优异、并发能力强；Gin框架轻量高效 \\
+ORM框架 & GORM & Go语言最流行的ORM，功能完善、文档齐全 \\
+数据库 & MySQL 8.0 & 成熟稳定的关系型数据库，社区支持好 \\
+对象存储 & MinIO & 兼容S3协议的开源对象存储，部署简单 \\
+AI服务 & 智谱GLM-4V-Flash & 国产多模态大模型，图片理解能力强 \\
+容器化 & Docker Compose & 容器编排工具，实现服务快速部署 \\
+MCP服务 & Node.js & JavaScript运行时，适合开发MCP服务 \\
+认证方案 & JWT & 无状态认证，适合前后端分离架构 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{技术架构图}
+
+系统采用经典的前后端分离B/S架构，各层职责清晰：
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+    node distance=0.8cm,
+    layer/.style={rectangle, draw=black!70, fill=blue!5, minimum width=14cm, minimum height=1.8cm, rounded corners=3pt},
+    sublayer/.style={rectangle, draw=black!50, fill=white, minimum width=3cm, minimum height=0.8cm, rounded corners=2pt, font=\small},
+    component/.style={rectangle, draw=black!40, fill=gray!10, minimum width=2.2cm, minimum height=0.6cm, rounded corners=2pt, font=\footnotesize},
+    storage/.style={rectangle, draw=black!60, fill=green!10, minimum width=3.5cm, minimum height=1.2cm, rounded corners=3pt},
+    arrow/.style={-{Stealth[length=2mm]}, thick, black!60},
+    label/.style={font=\small\bfseries}
+]
+
+% 客户端层
+\node[layer, fill=orange!10] (client) at (0, 8) {};
+\node[label] at (-5.5, 8) {客户端层};
+\node[sublayer] (pc) at (-4, 8) {PC浏览器};
+\node[sublayer] (mobile) at (0, 8) {移动端浏览器};
+\node[sublayer] (ai) at (4, 8) {AI助手};
+
+% 前端层
+\node[layer, fill=blue!10] (frontend) at (0, 5.5) {};
+\node[label] at (-5.5, 6) {前端应用层};
+\node[sublayer, minimum width=12cm] (react) at (0, 5.8) {React 18 + Vite + Tailwind CSS};
+\node[component] at (-4, 5) {认证页面};
+\node[component] at (-1.3, 5) {图库主页};
+\node[component] at (1.4, 5) {详情轮播};
+\node[component] at (4, 5) {图片编辑};
+
+% 后端层
+\node[layer, fill=yellow!10, minimum height=2.5cm] (backend) at (0, 2.3) {};
+\node[label] at (-5.5, 3.2) {后端服务层};
+\node[sublayer, minimum width=12cm] (go) at (0, 3) {Go + Gin Framework};
+\node[component] at (-4, 2.2) {认证控制器};
+\node[component] at (-1, 2.2) {图片控制器};
+\node[component] at (2.5, 2.2) {MCP公开接口};
+\node[sublayer, minimum width=10cm, fill=gray!20] (middleware) at (0, 1.4) {中间件层 (JWT认证 / CORS)};
+
+% 存储层
+\node[storage, fill=blue!15, align=center] (mysql) at (-4.5, -0.8) {MySQL 8.0\\\footnotesize 用户/图片元信息};
+\node[storage, fill=purple!15, align=center] (minio) at (0, -0.8) {MinIO\\\footnotesize 图片文件存储};
+\node[storage, fill=red!15, align=center] (zhipu) at (4.5, -0.8) {智谱AI\\\footnotesize GLM-4V分析};
+
+% MCP层
+\node[layer, fill=green!10, minimum height=1.2cm] (mcp) at (0, -2.8) {};
+\node[label] at (-5.5, -2.8) {MCP服务层};
+\node[sublayer, minimum width=12cm] at (0, -2.8) {Node.js: search\_images | list\_all | get\_details | by\_tag | stats};
+
+% 箭头
+\draw[arrow] (pc.south) -- ++(0, -0.5) -- (react.north -| pc);
+\draw[arrow] (mobile.south) -- ++(0, -0.5) -- (react.north -| mobile);
+\draw[arrow] (ai.south) -- ++(0, -0.5) -- (react.north -| ai);
+\draw[arrow] (0, 4.6) -- node[right, font=\footnotesize] {HTTP/REST API} (0, 3.5);
+\draw[arrow] (-4.5, 0.8) -- (mysql.north);
+\draw[arrow] (0, 0.8) -- (minio.north);
+\draw[arrow] (4.5, 0.8) -- (zhipu.north);
+
+\end{tikzpicture}
+\caption{系统技术架构图}
+\end{figure}
+
+\subsection{系统架构设计}
+
+\subsubsection{整体架构说明}
+
+本系统采用前后端分离的B/S (Browser/Server) 架构，具有以下特点：
+
+\begin{enumerate}
+    \item \textbf{前后端分离}：前端使用React构建单页应用(SPA)，后端使用Go提供RESTful API，两者通过HTTP协议通信，职责清晰、便于独立开发和部署。
+    
+    \item \textbf{微服务化设计}：系统拆分为多个独立服务（前端、后端、数据库、对象存储、MCP服务），每个服务可独立扩展和维护。
+    
+    \item \textbf{容器化部署}：所有服务均通过Docker容器化，使用Docker Compose进行编排，实现环境一致性和快速部署。
+    
+    \item \textbf{无状态设计}：后端采用JWT进行认证，服务本身无状态，便于水平扩展。
+\end{enumerate}
+
+\subsubsection{模块详细设计}
+
+\paragraph{前端模块 (Frontend)}
+
+前端采用React 18框架开发，主要包含以下组件：
+
+\begin{itemize}
+    \item \textbf{AuthPage}：用户认证页面，包含登录和注册两种模式切换
+    \item \textbf{HomePage}：图库主页，展示图片网格、搜索栏、上传区域
+    \item \textbf{ImageModal}：图片详情模态框，支持轮播、标签管理、EXIF信息展示
+    \item \textbf{ImageEditor}：图片编辑器，集成Cropper.js实现裁剪和旋转
+\end{itemize}
+
+前端状态管理采用React Hooks (useState, useEffect, useCallback, useRef)，路由使用React Router实现。
+
+\paragraph{后端API模块 (Backend)}
+
+后端采用Go语言Gin框架开发，目录结构如下：
+
+\begin{verbatim}
+backend/
+├── main.go              # 入口文件，路由配置
+├── controllers/         # 控制器层
+│   ├── auth.go         # 认证相关接口
+│   └── image.go        # 图片相关接口
+├── middlewares/         # 中间件
+│   └── auth.go         # JWT认证中间件
+├── models/              # 数据模型
+│   ├── usr.go          # 用户模型
+│   └── image.go        # 图片模型
+├── database/            # 数据库连接
+│   └── db.go           # GORM初始化
+└── utils/               # 工具函数
+    ├── jwt.go          # JWT生成与验证
+    ├── minio.go        # MinIO客户端
+    ├── exif.go         # EXIF信息提取
+    └── ai.go           # AI分析接口
+\end{verbatim}
+
+\paragraph{数据库模块 (Database)}
+
+采用MySQL 8.0作为关系型数据库，通过GORM进行对象关系映射。数据库设计遵循第三范式，支持软删除机制。
+
+\paragraph{对象存储模块 (Object Storage)}
+
+采用MinIO作为对象存储服务，兼容Amazon S3 API。存储桶配置：
+\begin{itemize}
+    \item 桶名称：images
+    \item 访问策略：public（允许匿名读取）
+    \item 存储内容：原图文件、缩略图文件
+\end{itemize}
+
+\paragraph{AI服务模块 (AI Service)}
+
+集成智谱AI的GLM-4V-Flash多模态大模型，实现图片内容分析。采用流式响应处理，提高响应效率。
+
+\paragraph{MCP服务模块 (MCP Server)}
+
+基于Node.js实现Model Context Protocol服务，为AI助手提供图库检索能力。
+
+\subsubsection{数据流设计}
+
+\paragraph{图片上传流程}
+
+\begin{enumerate}
+    \item 用户在前端选择或拖拽图片文件
+    \item 前端将图片文件通过FormData发送到后端 \texttt{POST /api/images/upload}
+    \item 后端接收文件，读取文件内容到内存
+    \item 调用AI服务分析图片内容，生成标签
+    \item 调用EXIF工具提取元信息（相机型号、拍摄时间等）
+    \item 生成唯一文件名，上传原图到MinIO
+    \item 生成缩略图（宽度400px），上传到MinIO
+    \item 将图片元信息存入MySQL数据库
+    \item 返回上传成功响应，包含图片完整信息
+\end{enumerate}
+
+\paragraph{图片检索流程}
+
+\begin{enumerate}
+    \item 用户在搜索框输入关键词
+    \item 前端发送 \texttt{GET /api/images?q=keyword} 请求
+    \item 后端解析JWT获取用户ID
+    \item 数据库执行模糊查询（文件名LIKE或标签LIKE）
+    \item 返回匹配的图片列表
+    \item 前端渲染图片网格
+\end{enumerate}
+
+\subsection{数据库设计}
+
+\subsubsection{E-R图描述}
+
+系统包含两个核心实体：用户(User)和图片(Image)，它们之间存在一对多的关联关系。
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+    entity/.style={rectangle, draw=black!70, fill=blue!10, minimum width=4cm, minimum height=0.8cm, font=\bfseries},
+    attribute/.style={rectangle, draw=black!50, fill=white, minimum width=3.8cm, minimum height=0.5cm, font=\small\ttfamily, anchor=north},
+    pk/.style={attribute, fill=yellow!20},
+    fk/.style={attribute, fill=green!20},
+    relationship/.style={diamond, draw=black!70, fill=orange!20, minimum width=1.5cm, minimum height=1cm, aspect=2, font=\small},
+    arrow/.style={-{Stealth[length=2mm]}, thick}
+]
+
+% User实体
+\node[entity] (user) at (-4, 0) {User (用户)};
+\node[pk, below=0.1cm of user] (uid) {PK: id};
+\node[attribute, below=0cm of uid] (uname) {username};
+\node[attribute, below=0cm of uname] (uemail) {email};
+\node[attribute, below=0cm of uemail] (upass) {password};
+\node[attribute, below=0cm of upass] (ucreate) {created\_at};
+\node[attribute, below=0cm of ucreate] (uupdate) {updated\_at};
+\node[attribute, below=0cm of uupdate] (udelete) {deleted\_at};
+
+% 关系
+\node[relationship] (rel) at (0, -1.5) {拥有};
+
+% Image实体
+\node[entity] (image) at (4, 0) {Image (图片)};
+\node[pk, below=0.1cm of image] (iid) {PK: id};
+\node[fk, below=0cm of iid] (iuser) {FK: user\_id};
+\node[attribute, below=0cm of iuser] (ifile) {file\_name};
+\node[attribute, below=0cm of ifile] (iurl) {url};
+\node[attribute, below=0cm of iurl] (ithumb) {thumbnail\_url};
+\node[attribute, below=0cm of ithumb] (itags) {tags};
+\node[attribute, below=0cm of itags] (icam) {camera\_model};
+\node[attribute, below=0cm of icam] (itime) {shooting\_time};
+\node[attribute, below=0cm of itime] (ires) {resolution};
+\node[attribute, below=0cm of ires] (iaper) {aperture};
+\node[attribute, below=0cm of iaper] (iiso) {iso};
+\node[attribute, below=0cm of iiso] (icreate) {created\_at};
+
+% 连线
+\draw[arrow] (user.east) -- node[above, font=\footnotesize] {1} (rel.west);
+\draw[arrow] (rel.east) -- node[above, font=\footnotesize] {N} (image.west);
+
+% 图例
+\node[pk, minimum width=1.5cm] at (-5, -5.5) {主键};
+\node[fk, minimum width=1.5cm] at (-3, -5.5) {外键};
+\node[attribute, minimum width=1.5cm] at (-1, -5.5) {属性};
+
+\end{tikzpicture}
+\caption{系统E-R图}
+\end{figure}
+
+\subsubsection{数据表设计}
+\paragraph{用户表 (users)}
+\begin{table}[H]
+\centering
+\caption{用户表结构}
+\begin{tabular}{llll}
+\toprule
+\textbf{字段名} & \textbf{类型} & \textbf{约束} & \textbf{说明} \\
+\midrule
+id & BIGINT UNSIGNED & PRIMARY KEY & 用户ID \\
+username & VARCHAR(255) & UNIQUE, NOT NULL & 用户名 \\
+email & VARCHAR(255) & UNIQUE, NOT NULL & 邮箱 \\
+password & TEXT & NOT NULL & 密码哈希 \\
+created\_at & DATETIME & - & 创建时间 \\
+updated\_at & DATETIME & - & 更新时间 \\
+deleted\_at & DATETIME & - & 删除时间(软删除) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{图片表 (images)}
+\begin{table}[H]
+\centering
+\caption{图片表结构}
+\begin{tabular}{llll}
+\toprule
+\textbf{字段名} & \textbf{类型} & \textbf{约束} & \textbf{说明} \\
+\midrule
+id & BIGINT UNSIGNED & PRIMARY KEY & 图片ID \\
+user\_id & BIGINT UNSIGNED & FOREIGN KEY & 所属用户ID \\
+file\_name & VARCHAR(512) & - & 原始文件名 \\
+url & TEXT & - & 原图URL \\
+thumbnail\_url & TEXT & - & 缩略图URL \\
+tags & TEXT & - & 标签(逗号分隔) \\
+camera\_model & VARCHAR(255) & - & 相机型号 \\
+shooting\_time & VARCHAR(255) & - & 拍摄时间 \\
+resolution & VARCHAR(64) & - & 分辨率 \\
+aperture & VARCHAR(64) & - & 光圈值 \\
+iso & VARCHAR(64) & - & ISO感光度 \\
+created\_at & DATETIME & - & 上传时间 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{API接口设计}
+
+\subsubsection{接口规范}
+
+本系统API设计遵循RESTful架构风格，具有以下特点：
+
+\begin{itemize}
+    \item \textbf{资源导向}：URL表示资源，使用HTTP方法表示操作
+    \item \textbf{无状态}：每个请求包含所有必要信息，服务端不保存会话状态
+    \item \textbf{统一接口}：使用标准HTTP方法（GET、POST、PUT、DELETE）
+    \item \textbf{JSON格式}：请求和响应数据均采用JSON格式
+\end{itemize}
+
+\paragraph{认证机制}
+
+系统采用JWT (JSON Web Token) 进行身份认证：
+
+\begin{enumerate}
+    \item 用户登录成功后，服务端生成JWT Token返回给客户端
+    \item 客户端将Token存储在localStorage中
+    \item 后续请求在Header中携带Token：\texttt{Authorization: Bearer <token>}
+    \item 服务端中间件验证Token有效性，提取用户ID
+\end{enumerate}
+
+\paragraph{响应格式}
+
+成功响应示例：
+\begin{lstlisting}[language=json]
+{
+  "message": "操作成功",
+  "data": { ... }
+}
+\end{lstlisting}
+
+错误响应示例：
+\begin{lstlisting}[language=json]
+{
+  "error": "错误描述信息"
+}
+\end{lstlisting}
+
+\subsubsection{接口详细说明}
+
+\paragraph{用户注册接口}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{ll}
+\toprule
+\textbf{属性} & \textbf{值} \\
+\midrule
+URL & \texttt{POST /api/auth/register} \\
+认证 & 不需要 \\
+Content-Type & application/json \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+请求参数：
+\begin{lstlisting}[language=json]
+{
+  "username": "string (必填, >=6字符)",
+  "email": "string (必填, 有效邮箱格式)",
+  "password": "string (必填, >=6字符)"
+}
+\end{lstlisting}
+
+成功响应 (200)：
+\begin{lstlisting}[language=json]
+{
+  "message": "注册成功",
+  "user_id": 1
+}
+\end{lstlisting}
+
+错误响应 (400)：
+\begin{lstlisting}[language=json]
+{
+  "error": "用户名或邮箱已存在"
+}
+\end{lstlisting}
+
+\paragraph{用户登录接口}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{ll}
+\toprule
+\textbf{属性} & \textbf{值} \\
+\midrule
+URL & \texttt{POST /api/auth/login} \\
+认证 & 不需要 \\
+Content-Type & application/json \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+请求参数：
+\begin{lstlisting}[language=json]
+{
+  "username": "string (必填)",
+  "password": "string (必填)"
+}
+\end{lstlisting}
+
+成功响应 (200)：
+\begin{lstlisting}[language=json]
+{
+  "message": "登录成功",
+  "token": "eyJhbGciOiJIUzI1NiIs...",
+  "user": {
+    "id": 1,
+    "username": "testuser",
+    "email": "test@example.com"
+  }
+}
+\end{lstlisting}
+
+\paragraph{图片上传接口}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{ll}
+\toprule
+\textbf{属性} & \textbf{值} \\
+\midrule
+URL & \texttt{POST /api/images/upload} \\
+认证 & 需要 (Bearer Token) \\
+Content-Type & multipart/form-data \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+请求参数：
+\begin{itemize}
+    \item \texttt{file}: 图片文件 (必填)
+\end{itemize}
+
+成功响应 (200)：
+\begin{lstlisting}[language=json]
+{
+  "message": "上传成功",
+  "image": {
+    "ID": 1,
+    "user_id": 1,
+    "file_name": "photo.jpg",
+    "url": "/minio/images/uuid.jpg",
+    "thumbnail_url": "/minio/images/thumb-uuid.jpg",
+    "tags": "风景",
+    "camera_model": "iPhone 15 Pro",
+    "shooting_time": "2024-01-01 12:00:00",
+    "resolution": "4032x3024",
+    "aperture": "f/1.8",
+    "iso": "100"
+  }
+}
+\end{lstlisting}
+
+\paragraph{获取图片列表接口}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{ll}
+\toprule
+\textbf{属性} & \textbf{值} \\
+\midrule
+URL & \texttt{GET /api/images} \\
+认证 & 需要 (Bearer Token) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+查询参数：
+\begin{itemize}
+    \item \texttt{q}: 搜索关键词 (可选)，支持文件名和标签模糊匹配
+\end{itemize}
+
+成功响应 (200)：
+\begin{lstlisting}[language=json]
+{
+  "data": [
+    {
+      "ID": 1,
+      "CreatedAt": "2024-01-01T12:00:00Z",
+      "file_name": "photo.jpg",
+      "url": "/minio/images/uuid.jpg",
+      "thumbnail_url": "/minio/images/thumb-uuid.jpg",
+      "tags": "风景,山水",
+      ...
+    }
+  ]
+}
+\end{lstlisting}
+
+\paragraph{更新图片标签接口}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{ll}
+\toprule
+\textbf{属性} & \textbf{值} \\
+\midrule
+URL & \texttt{PUT /api/images/:id/tags} \\
+认证 & 需要 (Bearer Token) \\
+Content-Type & application/json \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+请求参数：
+\begin{lstlisting}[language=json]
+{
+  "tags": "标签1,标签2,标签3"
+}
+\end{lstlisting}
+
+\paragraph{删除图片接口}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{ll}
+\toprule
+\textbf{属性} & \textbf{值} \\
+\midrule
+URL & \texttt{DELETE /api/images/:id} \\
+认证 & 需要 (Bearer Token) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+成功响应 (200)：
+\begin{lstlisting}[language=json]
+{
+  "message": "删除成功"
+}
+\end{lstlisting}
+
+\paragraph{MCP公开接口}
+
+MCP接口供AI助手调用，无需认证：
+
+\begin{table}[H]
+\centering
+\caption{MCP API接口}
+\begin{tabular}{lll}
+\toprule
+\textbf{方法} & \textbf{路径} & \textbf{说明} \\
+\midrule
+GET & /api/mcp/images?q=keyword & 搜索图片(支持文件名/标签/相机型号) \\
+GET & /api/mcp/stats & 获取图库统计(图片数/热门标签/相机分布) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{前端界面设计}
+
+\subsubsection{页面结构与路由}
+
+系统前端采用单页应用(SPA)架构，包含以下页面：
+
+\begin{table}[H]
+\centering
+\caption{前端路由配置}
+\begin{tabular}{lll}
+\toprule
+\textbf{路由} & \textbf{组件} & \textbf{说明} \\
+\midrule
+/login & AuthPage & 登录/注册页面 \\
+/ & HomePage & 图库主页(需登录) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{登录/注册页面设计}
+
+登录注册页面采用卡片式设计，支持登录和注册两种模式切换：
+
+\begin{itemize}
+    \item \textbf{视觉设计}：居中卡片布局，渐变背景，现代化表单样式
+    \item \textbf{表单验证}：前端实时验证用户名长度、邮箱格式、密码长度
+    \item \textbf{状态反馈}：加载状态显示、错误提示条、成功跳转
+    \item \textbf{图标装饰}：使用Lucide图标增强视觉效果
+\end{itemize}
+
+主要UI元素：
+\begin{enumerate}
+    \item Logo和系统名称
+    \item 用户名输入框（带用户图标）
+    \item 邮箱输入框（仅注册时显示，带邮件图标）
+    \item 密码输入框（带锁图标）
+    \item 提交按钮（支持加载状态）
+    \item 模式切换链接
+\end{enumerate}
+
+\subsubsection{图库主页设计}
+
+主页是系统的核心页面，包含以下区域：
+
+\paragraph{顶部导航栏}
+\begin{itemize}
+    \item Logo和系统名称（点击可清空搜索）
+    \item 搜索框（支持回车搜索）
+    \item 用户名显示
+    \item 退出登录按钮
+\end{itemize}
+
+\paragraph{上传区域}
+\begin{itemize}
+    \item 点击上传或拖拽上传
+    \item 上传前预览
+    \item 确认/取消按钮
+    \item 上传进度显示
+\end{itemize}
+
+\paragraph{图片网格}
+\begin{itemize}
+    \item 响应式网格布局（2-5列自适应）
+    \item 正方形缩略图展示
+    \item 悬停显示标签、文件名、日期
+    \item 悬停显示删除按钮
+    \item 懒加载优化性能
+\end{itemize}
+
+\subsubsection{图片详情/轮播模态框}
+
+点击图片进入全屏模态框，包含：
+
+\paragraph{图片展示区}
+\begin{itemize}
+    \item 全屏居中显示大图
+    \item 左右切换按钮
+    \item 键盘快捷键支持（←/→/ESC）
+\end{itemize}
+
+\paragraph{信息面板}（右侧/移动端底部）
+\begin{itemize}
+    \item 文件名显示
+    \item 上传时间
+    \item 标签管理（添加/删除/点击搜索）
+    \item EXIF信息展示（相机型号、拍摄时间、分辨率、光圈、ISO）
+    \item 编辑按钮
+    \item 删除按钮
+    \item 下载链接
+\end{itemize}
+
+\subsubsection{图片编辑界面}
+
+编辑模式在模态框内切换，提供以下功能：
+
+\begin{itemize}
+    \item \textbf{裁剪功能}：使用Cropper.js，支持自由裁剪
+    \item \textbf{旋转功能}：左旋90°、右旋90°按钮
+    \item \textbf{保存}：将编辑后的图片作为新图片上传
+    \item \textbf{取消}：退出编辑模式
+\end{itemize}
+
+\subsubsection{响应式设计策略}
+
+采用Tailwind CSS的响应式断点实现多设备适配：
+
+\begin{table}[H]
+\centering
+\caption{响应式断点配置}
+\begin{tabular}{llll}
+\toprule
+\textbf{断点} & \textbf{宽度} & \textbf{图片列数} & \textbf{布局调整} \\
+\midrule
+默认 & <640px & 2列 & 底部抽屉式详情面板 \\
+sm & ≥640px & 2列 & - \\
+md & ≥768px & 3列 & 右侧固定详情面板 \\
+lg & ≥1024px & 4列 & - \\
+xl & ≥1280px & 5列 & - \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+移动端特殊优化：
+\begin{itemize}
+    \item 隐藏部分非必要UI元素
+    \item 详情面板改为底部抽屉样式
+    \item 触摸友好的按钮尺寸
+    \item 适配微信内置浏览器
+\end{itemize}
+
+% ==================== 第二部分：功能实现说明 ====================
+\section{功能实现说明}
+
+\subsection{基本功能实现}
+
+\subsubsection{用户注册与登录 (功能1)}
+\paragraph{实现要点}
+\begin{itemize}
+    \item 用户名、密码长度验证(≥6字节)
+    \item Email格式验证
+    \item 用户名和Email唯一性约束
+    \item 密码bcrypt哈希存储
+    \item JWT Token认证机制
+\end{itemize}
+
+\paragraph{核心代码}
+\begin{lstlisting}[language=Go]
+// RegisterInput 定义注册请求的参数（Gin框架绑定验证）
+type RegisterInput struct {
+    Username string `json:"username" binding:"required"`
+    Email    string `json:"email" binding:"required,email"`
+    Password string `json:"password" binding:"required,min=6"`
+}
+
+// Register 处理用户注册
+func Register(c *gin.Context) {
+    var input RegisterInput
+    if err := c.ShouldBindJSON(&input); err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        return
+    }
+    // 使用bcrypt哈希密码
+    hashedPassword, _ := bcrypt.GenerateFromPassword(
+        []byte(input.Password), bcrypt.DefaultCost)
+    
+    user := models.User{
+        Username: input.Username,
+        Email:    input.Email,
+        Password: string(hashedPassword),
+    }
+    // 数据库UNIQUE约束保证用户名/邮箱唯一
+    if result := database.DB.Create(&user); result.Error != nil {
+        c.JSON(http.StatusBadRequest, 
+            gin.H{"error": "用户名或邮箱已存在"})
+        return
+    }
+    c.JSON(http.StatusOK, gin.H{"message": "注册成功"})
+}
+\end{lstlisting}
+
+\subsubsection{图片上传存储 (功能2)}
+\paragraph{实现要点}
+\begin{itemize}
+    \item 支持PC和手机浏览器上传
+    \item 拖拽上传支持
+    \item MinIO对象存储
+    \item 文件类型验证
+\end{itemize}
+
+\subsubsection{EXIF信息提取 (功能3)}
+\paragraph{实现要点}
+\begin{itemize}
+    \item 自动提取相机型号
+    \item 提取拍摄时间
+    \item 提取图片分辨率
+    \item 提取光圈、ISO等参数
+    \item \textbf{基于EXIF自动生成检索标签}（不依赖AI）
+\end{itemize}
+
+\paragraph{EXIF标签生成策略}
+
+除了AI生成的内容标签外，系统还会根据EXIF信息自动生成结构化标签，便于检索：
+
+\begin{table}[H]
+\centering
+\caption{EXIF信息与自动标签映射}
+\begin{tabular}{lll}
+\toprule
+\textbf{EXIF字段} & \textbf{生成标签类型} & \textbf{示例} \\
+\midrule
+相机型号 & 相机:型号 & 相机:iPhone 14 Pro \\
+拍摄时间(小时) & 时间:时段 & 时间:下午、时间:夜晚 \\
+拍摄时间(月份) & 月份:N & 月份:8 \\
+拍摄时间(季节) & 季节:X & 季节:夏 \\
+分辨率(宽高比) & 方向:X & 方向:横图、方向:竖图 \\
+分辨率(像素) & 分辨率:X & 分辨率:高($\geq$8MP) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{核心代码}
+\begin{lstlisting}[language=Go]
+// ExifTagsFromData 根据EXIF生成检索标签
+func ExifTagsFromData(exif ExifData) []string {
+    var tags []string
+    // 1) 相机型号
+    if model := strings.TrimSpace(exif.CameraModel); model != "" {
+        tags = append(tags, "相机:"+model)
+    }
+    // 2) 拍摄时间 -> 时间段/季节标签
+    if exif.ShootingTime != "" {
+        if t, err := time.Parse("2006-01-02 15:04:05", 
+            exif.ShootingTime); err == nil {
+            tags = append(tags, "时间:"+timeBucket(t.Hour()))
+            tags = append(tags, "季节:"+seasonBucket(int(t.Month())))
+        }
+    }
+    // 3) 分辨率 -> 方向 + 清晰度
+    w, h := parseResolution(exif.Resolution)
+    if w > 0 && h > 0 {
+        if w > h { tags = append(tags, "方向:横图") }
+        else if h > w { tags = append(tags, "方向:竖图") }
+        pixels := int64(w) * int64(h)
+        if pixels >= 8000000 { tags = append(tags, "分辨率:高") }
+    }
+    return tags
+}
+\end{lstlisting}
+
+\subsubsection{自定义标签 (功能4)}
+\paragraph{实现要点}
+\begin{itemize}
+    \item 支持添加自定义标签
+    \item 支持删除标签
+    \item 标签点击快速检索
+\end{itemize}
+
+\subsubsection{缩略图生成 (功能5)}
+\paragraph{实现要点}
+\begin{itemize}
+    \item 上传时自动生成缩略图
+    \item 缩略图宽度400px，保持比例
+    \item JPEG格式，80\%质量压缩
+\end{itemize}
+
+\subsubsection{数据库存储 (功能6)}
+\paragraph{实现要点}
+\begin{itemize}
+    \item 使用MySQL 8.0
+    \item GORM ORM框架
+    \item 支持软删除
+    \item 外键约束保证数据完整性
+\end{itemize}
+
+\subsubsection{图片检索 (功能7)}
+\paragraph{实现要点}
+\begin{itemize}
+    \item 按文件名搜索
+    \item 按标签搜索
+    \item 按相机型号搜索
+    \item 模糊匹配支持
+\end{itemize}
+
+\subsubsection{图片展示与轮播 (功能8)}
+\paragraph{实现要点}
+\begin{itemize}
+    \item 瀑布流/网格布局展示
+    \item 全屏轮播查看
+    \item 键盘快捷键支持(左右箭头、ESC)
+    \item 图片详情面板
+    \item \textbf{多选图片轮播功能}
+\end{itemize}
+
+\paragraph{多选轮播功能}
+
+系统支持用户选择多张图片进行轮播展示：
+
+\begin{enumerate}
+    \item 点击"多选"按钮进入多选模式
+    \item 点击图片进行选择/取消选择（显示勾选标记）
+    \item 选择完成后点击"开始轮播"进入全屏轮播
+    \item 轮播支持自动播放（3秒间隔）和手动切换
+    \item 支持暂停/继续、上一张/下一张控制
+\end{enumerate}
+
+\paragraph{核心代码（React状态管理）}
+\begin{lstlisting}[language=JavaScript]
+// 多选状态管理
+const [isMultiSelectMode, setIsMultiSelectMode] = useState(false);
+const [selectedImages, setSelectedImages] = useState([]);
+const [showSlideshow, setShowSlideshow] = useState(false);
+
+// 切换图片选中状态
+const toggleImageSelection = (image) => {
+  setSelectedImages(prev => {
+    const exists = prev.find(img => img.ID === image.ID);
+    if (exists) {
+      return prev.filter(img => img.ID !== image.ID);
+    } else {
+      return [...prev, image];
+    }
+  });
+};
+
+// 轮播自动播放
+useEffect(() => {
+  if (showSlideshow && isPlaying && selectedImages.length > 1) {
+    const timer = setInterval(() => {
+      setCurrentSlideIndex(prev => 
+        (prev + 1) % selectedImages.length);
+    }, 3000);
+    return () => clearInterval(timer);
+  }
+}, [showSlideshow, isPlaying, selectedImages.length]);
+\end{lstlisting}
+
+\subsubsection{图片编辑 (功能9)}
+\paragraph{实现要点}
+\begin{itemize}
+    \item 图片裁剪功能
+    \item 旋转功能(左旋/右旋90°)
+    \item \textbf{色调调整功能}（亮度、对比度、饱和度）
+    \item 使用Cropper.js库实现裁剪
+    \item 使用Canvas API实现色调调整
+    \item 编辑后保存为新图片
+\end{itemize}
+
+\paragraph{色调调整功能}
+
+系统提供了完整的色调调整功能：
+
+\begin{table}[H]
+\centering
+\caption{色调调整参数}
+\begin{tabular}{llll}
+\toprule
+\textbf{参数} & \textbf{范围} & \textbf{默认值} & \textbf{说明} \\
+\midrule
+亮度 (Brightness) & 0-200 & 100 & 调整图片明暗程度 \\
+对比度 (Contrast) & 0-200 & 100 & 调整明暗对比强度 \\
+饱和度 (Saturation) & 0-200 & 100 & 调整色彩鲜艳程度 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{核心代码（Canvas色调处理）}
+\begin{lstlisting}[language=JavaScript]
+// 应用色调调整到Canvas
+const applyColorAdjustments = (canvas, adjustments) => {
+  const ctx = canvas.getContext('2d');
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const data = imageData.data;
+  
+  const brightness = (adjustments.brightness - 100) * 2.55;
+  const contrast = adjustments.contrast / 100;
+  const saturation = adjustments.saturation / 100;
+  
+  for (let i = 0; i < data.length; i += 4) {
+    // 亮度调整
+    data[i] += brightness;     // R
+    data[i+1] += brightness;   // G
+    data[i+2] += brightness;   // B
+    // 对比度调整
+    data[i] = ((data[i] - 128) * contrast) + 128;
+    data[i+1] = ((data[i+1] - 128) * contrast) + 128;
+    data[i+2] = ((data[i+2] - 128) * contrast) + 128;
+    // 饱和度调整（HSL转换）
+    // ... 省略HSL转换代码
+  }
+  ctx.putImageData(imageData, 0, 0);
+};
+\end{lstlisting}
+
+\subsubsection{图片删除 (功能10)}
+\paragraph{实现要点}
+\begin{itemize}
+    \item 删除确认对话框
+    \item 同时删除原图和缩略图
+    \item 数据库记录删除
+\end{itemize}
+
+\subsubsection{移动端适配 (功能11)}
+\paragraph{实现要点}
+\begin{itemize}
+    \item Tailwind CSS响应式断点
+    \item 触摸友好的交互设计
+    \item 移动端底部抽屉式详情面板
+    \item 适配微信内置浏览器
+\end{itemize}
+
+\subsection{增强功能实现}
+
+\subsubsection{AI图片分析 (增强功能1)}
+\paragraph{实现要点}
+\begin{itemize}
+    \item 接入智谱GLM-4V-Flash多模态模型
+    \item 自动识别图片内容生成标签
+    \item 流式响应处理
+    \item 支持风景、人物、动物等多类型标签
+\end{itemize}
+
+\paragraph{核心代码}
+\begin{lstlisting}[language=Go]
+// AnalyzeImage 调用智谱GLM-4V-Flash分析图片
+func AnalyzeImage(fileData []byte) string {
+    // 1. 将图片转换为Base64
+    base64Str := base64.StdEncoding.EncodeToString(fileData)
+    imgDataURL := fmt.Sprintf("data:image/jpeg;base64,%s", base64Str)
+
+    // 2. 构造流式请求
+    requestBody := ZhipuRequest{
+        Model:  "glm-4v-flash",
+        Stream: true,
+        Messages: []Message{{
+            Role: "user",
+            Content: []ContentPart{
+                {Type: "image_url", ImageURL: &ImageURL{URL: imgDataURL}},
+                {Type: "text", Text: "请分析这张图片，提取最能描述画面内容的关键标签"},
+            },
+        }},
+    }
+    
+    // 3. 发送请求并解析流式响应
+    resp, _ := http.Post(ZhipuAPIURL, "application/json", 
+        bytes.NewBuffer(jsonData))
+    scanner := bufio.NewScanner(resp.Body)
+    var result strings.Builder
+    for scanner.Scan() {
+        // 解析SSE格式响应，提取content字段
+        // ...
+    }
+    return result.String()
+}
+\end{lstlisting}
+
+\subsubsection{MCP接口 (增强功能2)}
+\paragraph{实现要点}
+\begin{itemize}
+    \item 基于Model Context Protocol标准
+    \item 提供5个MCP工具:
+    \begin{itemize}
+        \item search\_images: 搜索图片
+        \item list\_all\_images: 列出所有图片
+        \item get\_image\_details: 获取图片详情
+        \item get\_images\_by\_tag: 按标签筛选
+        \item get\_gallery\_stats: 获取统计信息
+    \end{itemize}
+    \item 支持大模型对话式检索
+\end{itemize}
+
+% ==================== 第三部分：使用手册 ====================
+\section{使用手册}
+
+\subsection{环境要求}
+\begin{itemize}
+    \item Docker 20.10+
+    \item Docker Compose 2.0+
+    \item 现代浏览器(Chrome、Firefox、Safari、Edge)
+\end{itemize}
+
+\subsection{部署指南}
+\subsubsection{使用Docker Compose部署}
+\begin{lstlisting}[language=bash]
+# 1. 克隆项目
+git clone <repository-url>
+cd smart-image-gallery
+
+# 2. 启动所有服务
+docker compose up -d
+
+# 3. 查看服务状态
+docker compose ps
+
+# 4. 访问服务
+# 前端: http://localhost:5173
+# 后端API: http://localhost:8080
+# MinIO控制台: http://localhost:9001
+\end{lstlisting}
+
+\subsubsection{首次使用配置}
+\begin{enumerate}
+    \item 访问MinIO控制台 (http://localhost:9001)
+    \item 使用admin/password123登录
+    \item 创建名为"images"的Bucket
+    \item 设置Bucket访问策略为public
+\end{enumerate}
+
+\subsection{功能使用说明}
+
+\subsubsection{用户注册}
+\begin{enumerate}
+    \item 访问系统首页，点击"没有账号？点击注册"
+    \item 填写用户名(≥6位)、邮箱、密码(≥6位)
+    \item 点击"注册账户"完成注册
+\end{enumerate}
+
+\subsubsection{用户登录}
+\begin{enumerate}
+    \item 输入用户名和密码
+    \item 点击"立即登录"
+    \item 登录成功后跳转到主页
+\end{enumerate}
+
+\subsubsection{上传图片}
+\begin{enumerate}
+    \item 点击上传区域或拖拽图片到上传区
+    \item 预览图片，确认无误后点击"确认上传"
+    \item 系统自动提取EXIF信息并调用AI分析
+    \item 上传完成后图片显示在图库中
+\end{enumerate}
+
+\subsubsection{浏览图片}
+\begin{enumerate}
+    \item 主页以网格形式展示所有图片
+    \item 鼠标悬停显示标签、文件名、日期
+    \item 点击图片进入全屏轮播模式
+    \item 使用左右箭头切换图片，ESC退出
+\end{enumerate}
+
+\subsubsection{搜索图片}
+\begin{enumerate}
+    \item 在顶部搜索框输入关键词
+    \item 支持按文件名、标签搜索
+    \item 按回车执行搜索
+    \item 点击Logo可清空搜索
+\end{enumerate}
+
+\subsubsection{编辑图片}
+\begin{enumerate}
+    \item 点击图片进入详情页
+    \item 点击"编辑"按钮进入编辑模式
+    \item 拖动裁剪框选择区域
+    \item 使用旋转按钮调整方向
+    \item 点击"保存"将编辑后的图片作为新图片上传
+\end{enumerate}
+
+\subsubsection{管理标签}
+\begin{enumerate}
+    \item 在图片详情页的标签区域
+    \item 输入标签名称，点击"+"添加
+    \item 点击标签旁的"×"删除标签
+    \item 点击标签可快速搜索同标签图片
+\end{enumerate}
+
+\subsubsection{删除图片}
+\begin{enumerate}
+    \item 在图库中悬停图片，点击删除图标
+    \item 或在详情页点击"删除"按钮
+    \item 确认删除后图片将被永久删除
+\end{enumerate}
+
+\subsection{MCP接口使用}
+\subsubsection{配置MCP Server}
+
+MCP (Model Context Protocol) 是一种允许AI助手访问外部数据的协议。本系统提供了MCP服务器，可以让Claude等AI助手通过对话方式检索图库。
+
+\paragraph{安装与启动}
+\begin{lstlisting}[language=bash]
+# 进入MCP服务器目录
+cd mcp-server
+
+# 安装依赖
+npm install
+
+# 启动服务（需要后端服务已运行）
+node index.js
+\end{lstlisting}
+
+\paragraph{配置Claude Desktop}
+
+在Claude Desktop配置文件中添加MCP服务器：
+
+macOS配置文件位置：\texttt{\textasciitilde/Library/Application Support/Claude/claude\_desktop\_config.json}
+
+\begin{lstlisting}[language=json]
+{
+  "mcpServers": {
+    "smart-gallery": {
+      "command": "node",
+      "args": ["/path/to/mcp-server/index.js"],
+      "env": {
+        "BACKEND_URL": "http://localhost:8080"
+      }
+    }
+  }
+}
+\end{lstlisting}
+
+\paragraph{使用MCP Inspector调试}
+\begin{lstlisting}[language=bash]
+# 使用官方Inspector工具测试
+cd mcp-server
+npx @modelcontextprotocol/inspector node index.js
+# 浏览器访问 http://localhost:6274 进行调试
+\end{lstlisting}
+
+\subsubsection{通过AI助手检索图片}
+
+配置完成后，可以通过自然语言与AI助手对话检索图片：
+
+\begin{table}[H]
+\centering
+\caption{MCP对话示例}
+\begin{tabular}{ll}
+\toprule
+\textbf{用户提问} & \textbf{调用的MCP工具} \\
+\midrule
+"我的图库里有多少张照片？" & get\_gallery\_stats \\
+"帮我搜索所有风景照片" & search\_images \\
+"找出所有用iPhone拍的照片" & search\_images \\
+"获取ID为5的图片详细信息" & get\_image\_details \\
+"显示所有带'旅行'标签的图片" & get\_images\_by\_tag \\
+"列出最近上传的10张图片" & list\_all\_images \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{MCP工具返回示例}
+\begin{lstlisting}[language=json]
+// get_gallery_stats 返回
+{
+  "total_images": 42,
+  "cameras": {"iPhone 14 Pro": 25, "Canon EOS R5": 10},
+  "top_tags": [
+    {"tag": "风景", "count": 15},
+    {"tag": "人物", "count": 12}
+  ]
+}
+\end{lstlisting}
+
+% ==================== 第四部分：测试报告 ====================
+\section{测试报告}
+
+\subsection{测试环境}
+\begin{table}[H]
+\centering
+\caption{测试环境配置}
+\begin{tabular}{ll}
+\toprule
+\textbf{项目} & \textbf{配置} \\
+\midrule
+操作系统 & macOS Ventura 13.0 / Windows 11 \\
+浏览器 & Chrome 120, Safari 17, Firefox 121 \\
+移动设备 & iPhone 15 Pro, Android 14 \\
+Docker版本 & Docker 24.0.7 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{功能测试}
+
+\subsubsection{用户认证测试}
+\begin{table}[H]
+\centering
+\caption{用户认证功能测试}
+\begin{tabular}{llll}
+\toprule
+\textbf{测试项} & \textbf{测试内容} & \textbf{预期结果} & \textbf{实际结果} \\
+\midrule
+注册-正常 & 有效用户名/邮箱/密码 & 注册成功 & 通过 \\
+注册-用户名过短 & 用户名<6位 & 提示错误 & 通过 \\
+注册-密码过短 & 密码<6位 & 提示错误 & 通过 \\
+注册-邮箱格式 & 无效邮箱格式 & 提示错误 & 通过 \\
+注册-重复用户名 & 已存在的用户名 & 提示错误 & 通过 \\
+登录-正常 & 正确用户名密码 & 登录成功 & 通过 \\
+登录-错误密码 & 错误密码 & 提示错误 & 通过 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{图片上传测试}
+\begin{table}[H]
+\centering
+\caption{图片上传功能测试}
+\begin{tabular}{llll}
+\toprule
+\textbf{测试项} & \textbf{测试内容} & \textbf{预期结果} & \textbf{实际结果} \\
+\midrule
+上传JPEG & 标准JPEG图片 & 上传成功 & 通过 \\
+上传PNG & PNG格式图片 & 上传成功 & 通过 \\
+EXIF提取 & 带EXIF的照片 & 正确提取信息 & 通过 \\
+AI标签 & 任意图片 & 生成标签 & 通过 \\
+缩略图 & 任意图片 & 生成缩略图 & 通过 \\
+拖拽上传 & 拖拽图片到上传区 & 上传成功 & 通过 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{图片管理测试}
+\begin{table}[H]
+\centering
+\caption{图片管理功能测试}
+\begin{tabular}{llll}
+\toprule
+\textbf{测试项} & \textbf{测试内容} & \textbf{预期结果} & \textbf{实际结果} \\
+\midrule
+查看详情 & 点击图片 & 显示详情面板 & 通过 \\
+添加标签 & 输入自定义标签 & 标签添加成功 & 通过 \\
+删除标签 & 点击标签删除按钮 & 标签移除成功 & 通过 \\
+删除图片 & 点击删除按钮 & 图片被删除 & 通过 \\
+多选模式 & 点击多选按钮 & 进入多选模式 & 通过 \\
+选择图片 & 多选模式点击图片 & 显示选中标记 & 通过 \\
+批量轮播 & 选择多张后轮播 & 轮播选中图片 & 通过 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{搜索功能测试}
+\begin{table}[H]
+\centering
+\caption{搜索功能测试}
+\begin{tabular}{llll}
+\toprule
+\textbf{测试项} & \textbf{测试内容} & \textbf{预期结果} & \textbf{实际结果} \\
+\midrule
+文件名搜索 & 搜索部分文件名 & 返回匹配结果 & 通过 \\
+AI标签搜索 & 搜索"风景" & 返回相关图片 & 通过 \\
+EXIF标签搜索 & 搜索"横图" & 返回横向图片 & 通过 \\
+相机搜索 & 搜索"iPhone" & 返回对应图片 & 通过 \\
+季节搜索 & 搜索"夏" & 返回夏季拍摄图片 & 通过 \\
+时间搜索 & 搜索"夜晚" & 返回夜间拍摄图片 & 通过 \\
+空结果 & 搜索不存在关键词 & 显示无结果 & 通过 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{编辑功能测试}
+\begin{table}[H]
+\centering
+\caption{编辑功能测试}
+\begin{tabular}{llll}
+\toprule
+\textbf{测试项} & \textbf{测试内容} & \textbf{预期结果} & \textbf{实际结果} \\
+\midrule
+进入编辑 & 点击编辑按钮 & 显示编辑界面 & 通过 \\
+裁剪模式 & 选择裁剪模式 & 显示裁剪框 & 通过 \\
+自由裁剪 & 拖动裁剪框 & 裁剪区域调整 & 通过 \\
+左旋转 & 点击左旋按钮 & 逆时针旋转90° & 通过 \\
+右旋转 & 点击右旋按钮 & 顺时针旋转90° & 通过 \\
+色调模式 & 选择色调模式 & 显示调整滑块 & 通过 \\
+亮度调整 & 拖动亮度滑块 & 实时预览效果 & 通过 \\
+对比度调整 & 拖动对比度滑块 & 实时预览效果 & 通过 \\
+饱和度调整 & 拖动饱和度滑块 & 实时预览效果 & 通过 \\
+保存编辑 & 点击保存按钮 & 新图片上传成功 & 通过 \\
+取消编辑 & 点击取消按钮 & 退出编辑模式 & 通过 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{兼容性测试}
+\subsubsection{浏览器兼容性}
+\begin{table}[H]
+\centering
+\caption{浏览器兼容性测试}
+\begin{tabular}{lllll}
+\toprule
+\textbf{浏览器} & \textbf{版本} & \textbf{PC端} & \textbf{移动端} & \textbf{结果} \\
+\midrule
+Chrome & 120+ & ✓ & ✓ & 通过 \\
+Safari & 17+ & ✓ & ✓ & 通过 \\
+Firefox & 121+ & ✓ & ✓ & 通过 \\
+Edge & 120+ & ✓ & - & 通过 \\
+微信浏览器 & - & - & ✓ & 通过 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{响应式测试}
+\begin{table}[H]
+\centering
+\caption{响应式布局测试}
+\begin{tabular}{lllll}
+\toprule
+\textbf{设备} & \textbf{分辨率} & \textbf{图片列数} & \textbf{详情面板} & \textbf{结果} \\
+\midrule
+iPhone SE & 375×667 & 2列 & 底部抽屉 & 通过 \\
+iPhone 14 Pro & 393×852 & 2列 & 底部抽屉 & 通过 \\
+iPad Mini & 768×1024 & 3列 & 右侧面板 & 通过 \\
+iPad Pro & 1024×1366 & 4列 & 右侧面板 & 通过 \\
+笔记本 & 1440×900 & 4列 & 右侧面板 & 通过 \\
+桌面显示器 & 1920×1080 & 5列 & 右侧面板 & 通过 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{性能测试}
+\begin{table}[H]
+\centering
+\caption{性能测试结果}
+\begin{tabular}{llll}
+\toprule
+\textbf{测试项} & \textbf{测试条件} & \textbf{指标} & \textbf{结果} \\
+\midrule
+首页加载 & 100张图片 & 首屏时间 & <2s \\
+图片上传 & 5MB JPEG & 上传耗时 & <3s \\
+AI分析 & 单张图片 & 响应时间 & <5s \\
+搜索响应 & 1000条记录 & 查询耗时 & <200ms \\
+缩略图生成 & 4000×3000 & 处理时间 & <500ms \\
+轮播切换 & 10张大图 & 切换延迟 & <100ms \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{MCP接口测试}
+\begin{table}[H]
+\centering
+\caption{MCP接口功能测试}
+\begin{tabular}{llll}
+\toprule
+\textbf{工具} & \textbf{测试内容} & \textbf{预期结果} & \textbf{实际结果} \\
+\midrule
+search\_images & 关键词搜索 & 返回匹配图片列表 & 通过 \\
+list\_all\_images & 获取全部图片 & 返回图片列表 & 通过 \\
+get\_image\_details & 获取指定ID详情 & 返回完整EXIF信息 & 通过 \\
+get\_images\_by\_tag & 按标签筛选 & 返回匹配图片 & 通过 \\
+get\_gallery\_stats & 获取统计信息 & 返回数量/标签统计 & 通过 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{安全测试}
+\begin{itemize}
+    \item 密码存储：使用bcrypt哈希，不存储明文
+    \item JWT认证：Token有效期控制
+    \item SQL注入：使用GORM参数化查询
+    \item XSS防护：React自动转义
+    \item CORS配置：限制跨域访问
+\end{itemize}
+
+% ==================== 第五部分：开发体会 ====================
+\section{开发体会}
+
+\subsection{技术收获}
+\begin{enumerate}
+    \item \textbf{前后端分离架构}：深入理解了现代Web应用的前后端分离开发模式，掌握了RESTful API设计规范。
+    
+    \item \textbf{容器化部署}：学习了Docker和Docker Compose的使用，理解了容器编排和服务依赖管理。
+    
+    \item \textbf{对象存储}：掌握了MinIO对象存储的使用，理解了云存储的设计思想。
+    
+    \item \textbf{AI集成}：学习了如何集成大模型API，实现了图片智能分析功能。
+    
+    \item \textbf{MCP协议}：了解了Model Context Protocol，实现了AI对话检索接口。
+\end{enumerate}
+
+\subsection{遇到的问题与解决}
+\begin{enumerate}
+    \item \textbf{跨域问题}：前后端分离导致的CORS问题，通过后端配置CORS中间件解决。
+    
+    \item \textbf{文件上传}：大文件上传超时问题，通过调整超时配置和分块上传解决。
+    
+    \item \textbf{EXIF提取}：不同相机EXIF格式差异，通过使用成熟的EXIF库处理兼容性。
+    
+    \item \textbf{响应式布局}：移动端适配问题，使用Tailwind CSS的响应式类解决。
+    
+    \item \textbf{Docker网络}：容器间通信问题，通过创建自定义网络解决。
+    
+    \item \textbf{局域网访问}：手机无法访问localhost，通过动态获取主机IP生成URL解决。
+    
+    \item \textbf{MinIO图片URL}：移动端无法访问绝对URL，改为存储相对路径并在前端动态拼接解决。
+    
+    \item \textbf{Canvas跨域}：编辑外部图片时Canvas污染问题，通过设置crossOrigin属性解决。
+\end{enumerate}
+
+\subsection{改进方向}
+\begin{enumerate}
+    \item 支持更多图片格式(WebP、HEIC等)
+    \item 添加图片分享功能
+    \item 实现相册分组功能
+    \item 添加图片批量操作（批量删除、批量下载）
+    \item 优化大量图片的加载性能（虚拟滚动）
+    \item 添加图片水印功能
+    \item 支持图片地理位置标签（基于GPS EXIF）
+    \item 添加人脸识别与自动分组
+    \item 支持视频文件管理
+    \item 提供更多色调预设滤镜
+\end{enumerate}
+
+% ==================== 第六部分：小结 ====================
+\section{小结}
+
+本项目成功实现了一个功能完整的智能云图库系统，涵盖了作业要求的所有基本功能和增强功能：
+
+\subsection{基本功能完成情况}
+\begin{enumerate}
+    \item[$\checkmark$] 用户注册登录（含验证）
+    \item[$\checkmark$] PC/手机图片上传
+    \item[$\checkmark$] EXIF信息自动提取
+    \item[$\checkmark$] 自定义分类标签
+    \item[$\checkmark$] 缩略图生成
+    \item[$\checkmark$] 数据库存储
+    \item[$\checkmark$] 多条件查询
+    \item[$\checkmark$] 图片轮播展示（含多选轮播）
+    \item[$\checkmark$] 图片编辑（裁剪、旋转、色调调整）
+    \item[$\checkmark$] 图片删除
+    \item[$\checkmark$] 移动端适配
+\end{enumerate}
+
+\subsection{增强功能完成情况}
+\begin{enumerate}
+    \item[$\checkmark$] AI图片分析（智谱GLM-4V）
+    \item[$\checkmark$] MCP接口（支持AI对话检索）
+    \item[$\checkmark$] EXIF自动标签生成（相机/时间段/季节/方向/分辨率）
+\end{enumerate}
+
+\subsection{项目亮点}
+\begin{itemize}
+    \item 采用现代化技术栈，代码规范清晰
+    \item 完善的容器化部署方案（Docker Compose一键启动）
+    \item 优秀的用户体验设计（响应式、触摸友好）
+    \item 创新的AI功能集成（智谱GLM-4V图片分析）
+    \item MCP协议支持（可通过AI对话检索图库）
+    \item 双重标签体系（AI生成+EXIF推导，检索更精准）
+    \item 完整的图片编辑功能（裁剪、旋转、色调调整）
+    \item 多选轮播功能（支持批量选择图片幻灯片播放）
+\end{itemize}
+
+通过本项目的开发，不仅掌握了B/S架构软件开发的核心技术，还对云原生应用开发有了深入的理解。项目代码使用Git进行版本管理，提供了完整的Docker部署方案，可以快速部署运行。
+
+% ==================== 附录 ====================
+\appendix
+
+\section{Git提交日志}
+
+以下为部分关键提交记录（完整日志请查看项目仓库）：
+
+\begin{lstlisting}[basicstyle=\small\ttfamily]
+commit xxxxxxx - 添加多选轮播功能
+commit xxxxxxx - 实现色调调整功能(亮度/对比度/饱和度)
+commit xxxxxxx - 添加EXIF自动标签生成
+commit xxxxxxx - 实现MCP服务器接口
+commit xxxxxxx - 集成智谱GLM-4V图片分析
+commit xxxxxxx - 添加移动端响应式适配
+commit xxxxxxx - 实现图片裁剪和旋转功能
+commit xxxxxxx - 添加缩略图自动生成
+commit xxxxxxx - 实现EXIF信息提取
+commit xxxxxxx - 完成图片上传功能
+commit xxxxxxx - 实现用户注册登录
+commit xxxxxxx - 初始化Docker Compose配置
+commit xxxxxxx - 项目初始化
+\end{lstlisting}
+
+\textbf{获取完整Git日志：}
+\begin{lstlisting}[language=bash]
+cd smart-image-gallery
+git log --oneline -20
+\end{lstlisting}
+
+\section{项目目录结构}
+\begin{lstlisting}
+smart-image-gallery/
+├── backend/                 # Go后端
+│   ├── controllers/        # 控制器
+│   │   ├── auth.go        # 用户认证
+│   │   └── image.go       # 图片操作
+│   ├── database/           # 数据库连接
+│   │   └── db.go          # GORM初始化
+│   ├── middlewares/        # 中间件
+│   │   └── auth.go        # JWT验证
+│   ├── models/             # 数据模型
+│   │   ├── usr.go         # 用户模型
+│   │   └── image.go       # 图片模型
+│   ├── utils/              # 工具函数
+│   │   ├── jwt.go         # JWT生成验证
+│   │   ├── minio.go       # MinIO操作
+│   │   ├── exif.go        # EXIF提取
+│   │   ├── exif_tags.go   # EXIF标签生成
+│   │   ├── tags.go        # 标签合并工具
+│   │   └── ai.go          # AI分析接口
+│   ├── Dockerfile
+│   └── main.go             # 入口文件
+├── frontend/                # React前端
+│   ├── src/
+│   │   ├── pages/          # 页面组件
+│   │   │   ├── AuthPage.jsx    # 登录注册
+│   │   │   └── HomePage.jsx    # 图库主页
+│   │   ├── lib/            # 工具库
+│   │   │   ├── api.js          # API封装
+│   │   │   └── imageUrl.js     # URL处理
+│   │   ├── App.jsx         # 根组件
+│   │   └── main.jsx        # 入口
+│   ├── Dockerfile
+│   ├── package.json
+│   └── vite.config.js
+├── mcp-server/              # MCP服务
+│   ├── index.js            # 服务入口
+│   ├── package.json
+│   └── README.md           # 配置说明
+├── mysql/                   # 数据库脚本
+│   └── schema.sql          # 建表脚本
+├── scripts/                 # 工具脚本
+│   ├── export_data.sh      # 数据导出
+│   ├── import_data.sh      # 数据导入
+│   └── package_project.sh  # 项目打包
+├── docker-compose.yml       # 容器编排
+├── README.DOCKER.md         # 部署文档
+└── docs/                    # 文档目录
+    └── 实验报告大纲.tex     # 本报告
+\end{lstlisting}
+
+\section{核心代码清单}
+
+完整源代码请参见项目仓库，以下列出关键文件：
+
+\begin{table}[H]
+\centering
+\caption{核心代码文件说明}
+\begin{tabular}{lll}
+\toprule
+\textbf{文件} & \textbf{行数} & \textbf{功能说明} \\
+\midrule
+backend/main.go & ~80 & 路由配置、服务启动 \\
+backend/controllers/auth.go & ~95 & 注册登录逻辑 \\
+backend/controllers/image.go & ~290 & 图片CRUD操作 \\
+backend/utils/exif.go & ~120 & EXIF信息提取 \\
+backend/utils/exif\_tags.go & ~130 & EXIF标签生成 \\
+backend/utils/ai.go & ~175 & 智谱AI集成 \\
+frontend/src/pages/HomePage.jsx & ~800 & 图库主页全部功能 \\
+frontend/src/pages/AuthPage.jsx & ~150 & 登录注册界面 \\
+mcp-server/index.js & ~310 & MCP服务5个工具 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\end{document}

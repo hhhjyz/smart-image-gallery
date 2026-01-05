@@ -45,6 +45,59 @@ services:
       timeout: 20s
       retries: 3
 
+  # --- 3. 后端服务 (Go) ---
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: gallery_backend
+    restart: on-failure
+    ports:
+      - "8080:8080"
+    environment:
+      # MySQL (后端内部连接到 db 服务)
+      DB_USER: root
+      DB_PASSWORD: rootpassword
+      DB_HOST: db
+      DB_PORT: "3306"
+      DB_NAME: smart_gallery
+      # MinIO（后端使用内部服务名进行上传）
+      MINIO_ENDPOINT: minio:9000
+      MINIO_ACCESS_KEY: admin
+      MINIO_SECRET_KEY: password123
+      MINIO_USE_SSL: "false"
+      # 前端/浏览器访问用的 MinIO 地址
+      # 现在使用相对路径，不再需要配置公网 URL
+      # MINIO_PUBLIC_URL: http://localhost:9000  # 已废弃，前端自动处理
+      MINIO_BUCKET: images
+      # JWT secret（可覆盖）
+      JWT_SECRET: your_secret_key_here
+    networks:
+      - gallery_net
+    depends_on:
+      db:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+
+  # --- 4. 前端服务 (Vite) ---
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: gallery_frontend
+    restart: on-failure
+    ports:
+      - "5173:5173"
+    command: ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+    environment:
+      # 如需轮询以支持文件改变 (可选)
+      CHOKIDAR_USEPOLLING: "true"
+    networks:
+      - gallery_net
+    depends_on:
+      - backend
+
 volumes:
   mysql_data:
   minio_data:
